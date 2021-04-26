@@ -3,4 +3,4 @@ My thesis for Bachelor's degree obtained in 2020 year: Ansible application in co
 
 It is available in two languages:
 - english - **<todo_todo_todo_todo_todo_todo_todo_todo>**
-- polish - Praca_inzynierska_polish.pdf
+- polish - Praca_inzynierska_polski.pdf
