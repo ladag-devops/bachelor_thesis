@@ -1,0 +1,56 @@
+- name: Check services
+  include_tasks: report_daemons.yml
+  loop:
+  - app_transceiver
+  - mongodb
+  loop_control:
+    loop_var: service_name
+
+- name: Check SD card
+  include_tasks: check_disk_space.yml
+  vars:
+    device: "/dev/mmcblk1p1"
+- name: Prepare SD card info
+  set_fact:
+    sd_info:
+      name: "SD card info"
+      value: "{{'present (%s)'|format(disk_space_text) if disk_exists else 'not present'}}"
+      color: "{{'green' if (disk_exists and (disk_space|int > (200*1024))) else 'red'}}"
+
+- name: Check eMMC
+  include_tasks: check_disk_space.yml
+  vars:
+    device: "/"
+- name: Prepare eMMC info
+  set_fact:
+    emmc_info: 
+      name: "eMMC info"
+      value: "{{disk_space_text}}"
+      color: "{{'green' if (disk_exists and disk_space|int > (200*1024)) else 'red'}}"
+
+- name: check if web interface is available
+  uri: url="http://{{ inventory_hostname }}"
+  register: webcheck
+  
+- name: Set web interface info
+  set_fact:
+    web_info:
+      name: "Web interface"
+      value: "{{'available' if webcheck.status == 200 else 'unavailable'}}"
+      color: "{{'green' if webcheck.status == 200 else 'red'}}"
+
+- name: prepare parameters list
+  set_fact:
+    parameters: ["{{sd_info}}", "{{emmc_info}}", "{{web_info}}"]
+
+- name: prepare rsru parameters
+  set_fact:
+    rsru_elements:
+      parameters: "{{rsru.parameters + parameters}}"
+
+- name: Set rsru parameters
+  set_fact: rsru="{{rsru|combine(rsru_elements)}}"
+
+- name: Save json data
+  copy: content="{{rsru|to_nice_json}}" dest=json/{{inventory_hostname}}.json
+  delegate_to: localhost

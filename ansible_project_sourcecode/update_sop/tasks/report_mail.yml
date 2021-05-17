@@ -1,0 +1,36 @@
+---
+
+- name: Remove previous report file
+  file:
+    path: json/all_report.html
+    state: absent
+  delegate_to: localhost
+  run_once: True
+
+- name: Initialize list
+  set_fact: rsrus="{{[]}}"
+  run_once: True
+- name: Read json files
+  set_fact:
+    rsrus: "{{ rsrus + [lookup('file', item)|from_json] }}"
+  with_fileglob: json/*.json
+  run_once: True
+
+- name: Create output file
+  template:
+    src: templates/report.j2
+    dest: json/all_report.html
+  delegate_to: localhost
+
+- name: Send report to email
+  mail:
+    host: "{{ smtp_host }}"
+    port: "{{ smtp_port }}"
+    username: "{{ smtp_username }}"
+    password: "{{ smtp_password }}"
+    to: "{{ smtp_sendto }}"
+    subject: "Smart-Oil Plug Report ({{ now() }})"
+    body: "{{ lookup('file', 'json/all_report.html') }}"
+    subtype: html
+  delegate_to: localhost
+  run_once: True

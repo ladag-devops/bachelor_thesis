@@ -1,0 +1,14 @@
+- set_fact:
+    t_out: { num: "{{ ((t_in_secs | int) / 60) | round | int }}", unit: "minutes" }
+  when: t_in_secs|int < 3600
+
+- set_fact:
+    t_out: { num: "{{ ((t_in_secs | int) / 3600) | round | int }}", unit: "hours" }
+  when: t_in_secs|int > 3600 and t_in_secs|int <= 86400
+
+- set_fact:
+    t_out: { num: "{{ ((t_in_secs | int) / 86400) | round | int }}", unit: "days" }
+  when: t_in_secs|int > 86400
+
+- set_fact:
+    t_out_str: "{{ t_out.num }} {{ t_out.unit }}"

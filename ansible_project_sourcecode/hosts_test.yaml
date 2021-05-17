@@ -1,0 +1,20 @@
+---
+all:
+  hosts:
+  children:
+    test_devices:
+      hosts:
+        192.168.42.1:
+          peripherals:
+            - { id: de5602e026b4, addr: "DE:56:02:E0:26:B4", sn: 194102, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3205 } }
+            - { id: fa39d50d3466, addr: "FA:39:D5:0D:34:66", sn: 194101, dfu: { run: yes, new_hdw: no  }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3205 } }
+        192.168.1.68:
+          peripherals:
+            - { id: de5602e026b4, addr: "DE:56:02:E0:26:B4", sn: 194102, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3205 } }
+            - { id: fa39d50d3466, addr: "FA:39:D5:0D:34:66", sn: 194101, dfu: { run: yes, new_hdw: no  }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3205 } }
+    krakow:
+      hosts:
+        192.168.1.2:
+          peripherals:
+            - { id: de5602e026b4, addr: "DE:56:02:E0:26:B4", sn: 194102, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3205 } }
+            - { id: fa39d50d3466, addr: "FA:39:D5:0D:34:66", sn: 194101, dfu: { run: yes, new_hdw: no  }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3205 } }

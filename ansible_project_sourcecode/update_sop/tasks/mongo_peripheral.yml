@@ -1,0 +1,15 @@
+---
+    - name: Enable selected peripheral
+      shell: "mongo remote-transceiver-dev --quiet --eval 'db.sops.update({ uuid: \"{{ peripheral.id }}\" }, { $set: { enabled: true, hidden: false }})'"
+
+    # this section should be enabled when firmware adds new configuration fields
+    - name: Add new configuration fields
+      shell: "mongo remote-transceiver-dev --quiet --eval '{{ line_item }}'"
+      with_items:
+        - 'db.sops.update({ uuid: "{{ peripheral.id }}" }, { $set: { "config.primary.checkSamples": 3200 }})'
+        - 'db.sops.update({ uuid: "{{ peripheral.id }}" }, { $set: { "config.primary.measSamples": 32000 }})'
+      loop_control:
+        loop_var: line_item
+
+    - name: Check update
+      include_tasks: tasks/create_sop_config.yml

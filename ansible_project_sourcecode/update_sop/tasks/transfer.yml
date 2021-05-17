@@ -1,0 +1,22 @@
+---
+    - name: Upload rsync
+      copy:
+        src: ../common/edison/rsync
+        dest: /usr/bin/
+        mode: '0755'
+
+    - name: Prepare list-usb-devices.sh file
+      file:
+        path: /usr/jrd/scripts/list-usb-devices.sh
+        state: file
+        mode: '0755'
+
+    - shell: dos2unix /usr/jrd/scripts/list-usb-devices.sh
+
+    - name: Transfer files
+      synchronize:
+        src: files/
+        dest: /
+
+    - name: Sync changes
+      shell: sync

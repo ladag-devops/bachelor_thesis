@@ -1,0 +1,6 @@
+---
+smtp_host: smtp.gmail.com
+smtp_port: 587
+smtp_username: pandas@jrdltd.co.uk
+smtp_password: m!4S7<F4
+smtp_sendto: grzegorz@jrdltd.co.uk, krzysiek@jrdltd.co.uk

@@ -1,0 +1,156 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      .container {
+        color: #606c76;
+        font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-weight: 300;
+        margin-bottom: 32px;
+        margin-top: 0;
+      }
+      h1 { font-size: 74px; }
+      h2 { font-size: 58px; }
+      h3 { font-size: 45px; }
+      h4 { font-size: 35px; }
+      h5 { font-size: 30px; }
+      h6 { font-size: 26px; }
+      .table {
+        border-spacing: 0;
+        width:100%;
+        margin-bottom: 16px;
+        text-align: left;
+        color:#fff;
+        background-color:#343a40;
+      }
+      .table td, .table th {
+        vertical-align: top;
+        border-top: 1px solid #dee2e6;
+        padding: 5px;
+      }
+      .bg-warning {background-color:#ffc107!important}
+      .bg-danger {background-color:#dc3545!important}
+      .bg-success {background-color:#28a745!important}
+    </style>
+  </head>
+  <body>
+  <div class="container">
+    <h3 style="text-align:center">Smart-Oil Plug Report</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">RSRU</th>
+          <th scope="col">Plug</th>
+          <th scope="col">State</th>
+        </tr>
+      </thead>
+      <tbody>
+{% for rsru in rsrus %}
+{% for peripheral in rsru.peripherals %}
+{% set info_style = 'class="bg-success"'                         %}
+{% if   "red"    in peripheral.parameters|map(attribute="color") %}
+{% set info_style = 'class="bg-danger"'                          %}
+{% elif "orange" in peripheral.parameters|map(attribute="color") %}
+{% set info_style = 'class="bg-warning"'                         %}
+{% endif                                                         %}
+        <tr>
+          <td>{{rsru.name}}</td>
+          <td>{{peripheral.uuid}}</td>
+          <td {{info_style}}></td>
+        </tr>
+{% endfor %}
+{% endfor %}
+      </tbody>
+    </table>
+
+{% for rsru in rsrus %}
+    <h4>{{rsru.name}}</h4>
+    <div>
+      <table class="table">
+        <tr>
+          <th colspan="2" style="text-align:center">
+            RSRU | {{rsru.ip_address}} | {{rsru.cr_id}}
+          </th>
+        </tr>
+{% for param in rsru.parameters %}
+{% set info_style = ''                   %}
+{% if   param.color == 'green'           %}
+{% set info_style = 'class="bg-success"' %}
+{% elif param.color == 'orange'          %}
+{% set info_style = 'class="bg-warning"' %}
+{% elif param.color == 'red'             %}
+{% set info_style = 'class="bg-danger"'  %}
+{% endif                                 %}
+        <tr>
+          <td style="width:250px">{{param.name}}:</td>
+          <td {{info_style}}>{{param.value}}</td>
+        </tr>
+{% endfor %}
+{% for service in rsru.services %}
+{% set info_style = ''                    %}
+{% if   service.color == 'green'          %}
+{% set info_style = 'class="bg-success"'  %}
+{% elif service.color == 'orange'         %}
+{% set info_style = 'class="bg-warning"'  %}
+{% elif service.color == 'red'            %}
+{% set info_style = 'class="bg-danger"'   %}
+{% endif                                  %}
+        <tr>
+          <td style="width:250px">{{service.name}}:</td>
+          <td {{info_style}}>{{service.state}} for {{service.time}}</td>
+        </tr>
+{% endfor %}
+      </table>
+{% for peripheral in rsru.peripherals %}
+      <table class="table">
+        <tr>
+          <th colspan="2" style="text-align:center">
+            Plug                |
+            {{peripheral.uuid}} |
+            {{peripheral.sn}}   |
+            {{peripheral.name}}
+          </th>
+        </tr>
+{% for param in peripheral.parameters %}
+{% set info_style = ''                   %}
+{% if   param.color == 'green'           %}
+{% set info_style = 'class="bg-success"' %}
+{% elif param.color == 'orange'          %}
+{% set info_style = 'class="bg-warning"' %}
+{% elif param.color == 'red'             %}
+{% set info_style = 'class="bg-danger"'  %}
+{% endif                                 %}
+        <tr>
+          <td style="width:250px">{{param.name}}:</td>
+          <td {{info_style}}>
+{% if param.stats is defined %}
+            <section>
+              <div style="float:left;width:100px">
+                {{param.format|format(param.value|float)}}
+              </div>
+{% if param.stats.avg != 'N/A' %}
+              <div style="float:left;width:100px">
+                x̄: {{param.format|format(param.stats.avg|float)}}
+              </div>
+{% endif %}
+{% if param.stats.min != 'N/A' and param.stats.max != 'N/A' %}
+              <div style="float:left;">
+                [{{param.format|format(param.stats.min|float)}}, {{param.format|format(param.stats.max|float)}}]
+              </div>
+{% endif %}
+            </section>
+{% else %}
+            {{param.value}}
+{% endif %}
+          </td>
+        </tr>
+{% endfor %}
+      </table>
+{% endfor %}
+    </div>
+{% endfor %}
+  </body>
+  </div>
+</html>

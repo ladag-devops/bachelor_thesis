@@ -1,0 +1,28 @@
+---
+    - name: Prepare services
+      systemd:
+        name: "{{ item.name }}"
+        state: "{{ item.state }}"
+        enabled: yes
+      with_items:
+        - { name: 'app_transceiver', state: 'stopped' }
+        - { name: 'watchdog_kick',   state: 'restarted' }
+
+    - name: Transfer files
+      include_tasks: transfer.yml
+
+    - name: Run device firmware update
+      include_tasks: firmware.yml
+
+    - name: Update mongodb
+      include_tasks: mongo.yml
+
+    - name: Restart services
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+      with_items:
+        - 'mongodb'
+        - 'io_broker'
+        - 'app_transceiver'
+        - 'www_run'

@@ -1,0 +1,11 @@
+[Unit]
+Description=Create report for SOP devices
+
+[Service]
+Type=simple
+ExecStartPre=-/bin/rm -rf /home/ansible/SOP_updater/log
+ExecStart=/home/ansible/SOP_updater/run_sop.sh report
+ExecStartPost=/home/ansible/SOP_updater/run_sop.sh report-mail
+
+[Install]
+WantedBy=multi-user.target

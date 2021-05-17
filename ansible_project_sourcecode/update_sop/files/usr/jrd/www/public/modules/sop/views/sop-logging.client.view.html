@@ -1,0 +1,72 @@
+<div ng-controller="SopLoggingController as logCtrl" ng-init="logCtrl.get()" layout="column" layout-margin layout-align="start center"
+  flex>
+  <div layout="column" class="td-page-content">
+    <div layout="column" layout-margin>
+
+      <md-content>
+        <form layout-padding name="logForm" novalidate ng-submit="logForm.$valid && logCtrl.submit()">
+          <div layout-gt-sm="row">
+            <md-input-container class="md-block" flex-gt-sm>
+              <label>X Threshold (ptp) [g]</label>
+              <input type="number" required min="0" name="xThreshold" ng-model="logCtrl.logParams.xThreshold">
+              <div ng-messages="logForm.xThreshold.$error">
+                <div ng-message="min">The value has to be at least 0</div>
+                <div ng-message="required">It is required</div>
+              </div>
+            </md-input-container>
+
+            <md-input-container class="md-block" flex-gt-sm>
+              <label>Y Threshold (ptp) [g]</label>
+              <input type="number" min="0" required name="yThreshold" ng-model="logCtrl.logParams.yThreshold">
+              <div ng-messages="logForm.yThreshold.$error">
+                <div ng-message="min">The value has to be at least 0</div>
+                <div ng-message="required">It is required</div>
+              </div>
+            </md-input-container>
+          </div>
+          <div layout-gt-sm="row">
+            <md-input-container class="md-block" flex-gt-sm>
+              <label>Z Threshold (ptp) [g]</label>
+              <input type="number" required min="0" name="zThreshold" ng-model="logCtrl.logParams.zThreshold">
+              <div ng-messages="logForm.zThreshold.$error">
+                <div ng-message="min">The value has to be at least 0</div>
+                <div ng-message="required">It is required</div>
+              </div>
+            </md-input-container>
+
+            <md-input-container class="md-block" flex-gt-sm>
+              <label>Acc Acq Divider</label>
+              <input type="number" required min="0" max="{{logCtrl.maxAccAcqDivider}}" name="accAcqDivider" ng-model="logCtrl.logParams.accAcqDivider">
+              <div ng-messages="logForm.accAcqDivider.$error">
+                <div ng-message="min">The value has to be at least 0</div>
+                <div ng-message="max">The value can't be greater than {{logCtrl.maxAccAcqDivider}}</div>
+                <div ng-message="required">It is required</div>
+              </div>
+            </md-input-container>
+          </div>
+
+          <div layout-gt-sm="row">
+            <md-input-container class="md-block" flex-gt-sm>
+              <label>Number of samples</label>
+              <input type="number" required min="0" name="measSamples" ng-model="logCtrl.logParams.measSamples">
+              <div ng-messages="logForm.measSamples.$error">
+                <div ng-message="min">The value has to be at least 0</div>
+                <div ng-message="required">It is required</div>
+              </div>
+            </md-input-container>
+            <md-input-container class="md-block" flex-gt-sm>
+              <label>Samples to check (ptp)</label>
+              <input type="number" required min="0" name="checkSamples" ng-model="logCtrl.logParams.checkSamples">
+              <div ng-messages="logForm.checkSamples.$error">
+                <div ng-message="min">The value has to be at least 0</div>
+                <div ng-message="required">It is required</div>
+              </div>
+            </md-input-container>
+          </div>
+
+          <md-button class="md-raised md-primary md-hue-1" ng-disabled="logCtrl.loading || logCtrl.fault" type="submit">Save</md-button>
+        </form>
+      </md-content>
+    </div>
+  </div>
+</div>

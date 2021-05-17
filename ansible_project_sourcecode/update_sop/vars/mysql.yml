@@ -1,0 +1,6 @@
+---
+mysql_host: 10.8.6.225
+mysql_port: 3306
+mysql_db: gdn
+mysql_user: ansible
+mysql_password: qTre5mPvnHDdt27K

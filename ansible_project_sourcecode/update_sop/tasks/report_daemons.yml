@@ -1,0 +1,57 @@
+- name: Set service date/time format
+  set_fact: dt_fmt="%a %Y-%m-%d %H:%M:%S %Z"
+
+- name: "check {{ service_name }} daemon"
+  systemd: name="{{ service_name }}"
+  register: service_status
+- set_fact: service_status={{service_status.status}}
+
+- name: Get current UTC date
+  shell: date +"%s" -u
+  register: now_date
+- set_fact: now_date="{{now_date.stdout}}"
+
+- set_fact: service_time_secs=0
+
+- name: Check active
+  include_tasks: tasks/to_unixtime_utc.yml
+  vars:
+    to_ut_utc_dt: "{{service_status.ActiveEnterTimestamp}}"
+    to_ut_utc_fmt: "{{dt_fmt}}"
+  when: service_status.ActiveState == "active"
+- set_fact: service_time_secs="{{ now_date|int - to_ut_utc_epoch|int }}"
+  when: service_status.ActiveState == "active" and to_ut_utc_epoch != 0
+
+- name: Check inactive
+  include_tasks: tasks/to_unixtime_utc.yml
+  vars:
+    to_ut_utc_dt: "{{service_status.InactiveEnterTimestamp}}"
+    to_ut_utc_fmt: "{{dt_fmt}}"
+  when: service_status.ActiveState != "active"
+- set_fact: service_time_secs="{{ now_date|int - to_ut_utc_epoch|int }}"
+  when: service_status.ActiveState != "active" and to_ut_utc_epoch != 0
+
+- name: Format time age
+  include_tasks: tasks/time_units.yml
+  vars:
+    t_in_secs: "{{service_time_secs}}"
+- set_fact: service_time_text="{{ t_out_str if service_time_secs != 0 else "N/A" }}"
+
+- name: Select time age color
+  set_fact: service_color="{{'green' if service_status.ActiveState == 'active' else 'red'}}"
+
+- name: Prepare service info
+  set_fact:
+    service:
+      name:   "{{service_name}}"
+      state:  "{{service_status.ActiveState}}"
+      time:   "{{service_time_text}}"
+      color:  "{{service_color}}"
+
+- name: Prepare rsru services list
+  set_fact:
+    rsru_elements:
+      services: "{{rsru.services + [service]}}"
+
+- name: Set rsru parameters
+  set_fact: rsru="{{ rsru|combine(rsru_elements) }}"

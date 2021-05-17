@@ -1,0 +1,207 @@
+- name: Get peripheral info
+  local_action: command mysql {{db_conn}} "SELECT id, name, serial_number FROM gdn.peripheral_devices WHERE uuid = '{{peripheral.id}}';"
+  register: result
+- name: Parse peripheral info
+  set_fact: info="{{result.stdout.split('\t')}}"
+- name: Create device object
+  set_fact:
+    dev: { id: "{{info[0]}}", uuid: "{{peripheral.id}}", name: "{{info[1]}}", sn: "{{info[2]}}" }
+
+- name: Get peripheral files (7 days)
+  local_action: command mysql {{db_conn}} "SELECT
+      count(*)
+    FROM sop2609.file_info
+    WHERE plug_id = '{{dev.uuid}}' AND datetime >= DATE_SUB(CURDATE(), INTERVAL 7 day);"
+  register: result
+- name: Prepare total files info
+  set_fact:
+    total_files_info:
+      name: 'Total files (7 days)'
+      value: "{{result.stdout}}"
+      color: "{{(result.stdout|int == 0)|ternary('red', 'green')}}"
+
+- name: Get peripheral stats
+  local_action: command mysql {{db_conn}} "
+      SELECT
+        min(rssi),            max(rssi),            avg(rssi),
+        min(battery_voltage), max(battery_voltage), avg(battery_voltage),
+        min(temperature),     max(temperature),     avg(temperature),
+        min(capacitance),     max(capacitance),     avg(capacitance),
+        max(acc_z_stddev),    max(acc_z_pp)
+      FROM
+        sop2609.sop_data
+      WHERE
+        peripheral_id = {{dev.id}}
+      AND
+        timestamp >= UNIX_TIMESTAMP(DATE_SUB(CURDATE(), INTERVAL 7 day));"
+  register: result
+- name: Set peripheral stats
+  set_fact: stats="{{result.stdout.split('\t')|map('regex_replace', 'NULL', 'N/A')|list}}"
+- name: Prepare stats
+  set_fact:
+    stats:
+      rssi:            { min: "{{stats[0]}}", max: "{{stats[1]}}",  avg: "{{stats[2]}}"  }
+      battery_voltage: { min: "{{stats[3]}}", max: "{{stats[4]}}",  avg: "{{stats[5]}}"  }
+      temperature:     { min: "{{stats[6]}}", max: "{{stats[7]}}",  avg: "{{stats[8]}}"  }
+      capacitance:     { min: "{{stats[9]}}", max: "{{stats[10]}}", avg: "{{stats[11]}}" }
+
+- name: Get peripheral sample
+  local_action: command mysql {{db_conn}} "
+      SELECT
+        (UNIX_TIMESTAMP(NOW()) - timestamp), rssi, packet_counter, battery_voltage,
+        temperature_internal, temperature, capacitance, fw_version
+      FROM
+        sop2609.sop_data_latest
+      WHERE peripheral_id = {{dev.id}};"
+  register: result
+- name: Parse sample
+  set_fact: sample="{{result.stdout.split('\t')}}"
+- name: Set peripheral sample
+  set_fact:
+    sample:
+      age:                  "{{sample[0]|default('N/A', true)}}"
+      rssi:                 "{{sample[1]|default('N/A')}}"
+      packet_counter:       "{{sample[2]|default('N/A')}}"
+      battery_voltage:      "{{sample[3]|default('N/A')}}"
+      temperature_internal: "{{sample[4]|default('N/A')}}"
+      temperature:          "{{sample[5]|default('N/A')}}"
+      capacitance:          "{{sample[6]|default('N/A')}}"
+      fw_version:           "{{sample[7]|default('N/A')}}"
+
+- name: Sample age
+  block:
+  - name: Format sample age
+    include_tasks: tasks/time_units.yml
+    vars:
+      t_in_secs: "{{sample.age}}"
+  - name: Set sample age info
+    set_fact:
+      sample_age_info:
+        name:  "Sample age"
+        value: "{{t_out_str}}"
+        color: "{{'red' if sample.age|int > 3*86400 else 'orange' if sample.age|int > 86400 else 'green'}}"
+  when: not sample.age == "N/A"
+- name: Set sample age info
+  set_fact:
+    sample_age_info: { name: "Sample age", value: "N/A", color: "red" }
+  when: sample.age == "N/A"
+
+- name: RSSI
+  block:
+  - name: Set rssi info
+    set_fact:
+      rssi_info:
+        name:  "RSSI [dBm]"
+        value: "{{sample.rssi}}"
+        format: "%d"
+        color: "{{'red' if sample.rssi|int <= -90 else 'orange' if sample.rssi|int <= -80 else 'green'}}"
+        stats: "{{stats.rssi}}"
+  when: not sample.rssi == "N/A"
+- name: Set rssi nfo
+  set_fact:
+    rssi_info: { name: "RSSI [dBm]", value: "N/A", color: "red" }
+  when: sample.rssi == "N/A"
+
+- name: Battery voltage
+  block:
+  - name: Set battery voltage info
+    set_fact:
+      battery_voltage_info:
+        name:  "Battery voltage [V]"
+        value: "{{sample.battery_voltage}}"
+        format: "%.2f"
+        color: "{{'green' if sample.battery_voltage|float > 3.5 else 'red'}}"
+        stats: "{{stats.battery_voltage}}"
+  when: not sample.battery_voltage == "N/A"
+- name: Set battery voltage info
+  set_fact:
+    battery_voltage_info: { name: "Battery voltage [V]", value: "N/A", color: "red" }
+  when: sample.battery_voltage == "N/A"
+
+- name: Temperature
+  block:
+  - name: Set temperature info
+    set_fact:
+      temperature_info:
+        name:  "Temperature [°C]"
+        value: "{{sample.temperature}}"
+        format: "%0.1f"
+        color: "black"
+        stats: "{{stats.temperature}}"
+  when: not sample.temperature == "N/A"
+- name: Set temperature info
+  set_fact:
+    temperature_info: { name: "Temperature [°C]", value: "N/A", color: "red" }
+  when: sample.temperature == "N/A"
+
+- name: Capacitance
+  block:
+  - name: Set capacitance info
+    set_fact:
+      capacitance_info:
+        name:  "Capacitance [pF]"
+        value: "{{sample.capacitance}}"
+        format: "%0.3f"
+        color: "black"
+        stats: "{{stats.capacitance}}"
+  when: not sample.capacitance == "N/A"
+- name: Set capacitance info
+  set_fact:
+    capacitance_info: { name: "Capacitance [pF]", value: "N/A", color: "red" }
+  when: sample.capacitance == "N/A"
+
+- name: Packet counter
+  block:
+  - name: Set packet counter info
+    set_fact:
+      packet_counter_info:
+        name:  "Packet counter"
+        value: "{{sample.packet_counter}}"
+        format: "%d"
+        color: "black"
+  when: not sample.packet_counter == "N/A"
+- name: Set packet counter info
+  set_fact:
+    packet_counter_info: { name: "Packet counter", value: "N/A", color: "red" }
+  when: sample.packet_counter == "N/A"
+
+- name: Firmware version
+  block:
+  - name: Set firmware version info
+    set_fact:
+      fw_version_info:
+        name:  "Firmware version"
+        value: "{{sample.fw_version|float/1000}}"
+        format: "%.3f"
+        color: "black"
+  when: not sample.fw_version == "N/A"
+- name: Set firmware version info
+  set_fact:
+    fw_version_info: { name: "Firmware version", value: "N/A", color: "red" }
+  when: sample.fw_version == "N/A"
+
+- name: prepare parameters list
+  set_fact:
+    peripheral_elements:
+      id:   "{{dev.id}}"
+      name: "{{dev.name}}"
+      sn:   "{{dev.sn}}"
+      uuid: "{{dev.uuid}}"
+      parameters: [
+        "{{total_files_info}}",
+        "{{sample_age_info}}",
+        "{{capacitance_info}}",
+        "{{battery_voltage_info}}",
+        "{{temperature_info}}",
+        "{{rssi_info}}",
+        "{{packet_counter_info}}",
+        "{{fw_version_info}}"
+      ]
+
+- name: prepare rsru parameters
+  set_fact:
+    rsru_elements:
+      peripherals: "{{rsru.peripherals + [peripheral_elements]}}"
+
+- name: Set basic rsru parameters
+  set_fact: rsru="{{rsru|combine(rsru_elements)}}"

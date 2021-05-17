@@ -1,0 +1,46 @@
+---
+all:
+  hosts:
+  children:
+    sop_prod:
+      hosts:
+        10.8.6.121:
+          peripherals:
+            - { id: e45ca22ac70a, addr: "E4:5C:A2:2A:C7:0A", sn: 194101, dfu: { run: yes, new_hdw: no  }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: de33a8a01d98, addr: "DE:33:A8:A0:1D:98", sn: 194102, dfu: { run: yes, new_hdw: no  }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.101:
+          peripherals:
+            - { id: f93325ab606f, addr: "F9:33:25:AB:60:6F", sn: 194103, dfu: { run: no,  new_hdw: no  }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: c05c7c2d2cd6, addr: "C0:5C:7C:2D:2C:D6", sn: 194104, dfu: { run: yes, new_hdw: no  }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.141:
+          peripherals:
+            - { id: c23f8fd7c421, addr: "C2:3F:8F:D7:C4:21", sn: 194114, dfu: { run: no,  new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: dd3db5cec1f0, addr: "DD:3D:B5:CE:C1:F0", sn: 194105, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.145:
+          peripherals:
+            - { id: eeb4cc7b94e7, addr: "EE:B4:CC:7B:94:E7", sn: 194111, dfu: { run: no,  new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: d49943f2c88b, addr: "D4:99:43:F2:C8:8B", sn: 194107, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.153:
+          peripherals:
+            - { id: e4ad02938dde, addr: "E4:AD:02:93:8D:DE", sn: 194117, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: c7fb1a612d33, addr: "C7:FB:1A:61:2D:33", sn: 194119, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.157:
+          peripherals:
+            - { id: cc0a878c5848, addr: "CC:0A:87:8C:58:48", sn: 194109, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: dbd12e4957bb, addr: "DB:D1:2E:49:57:BB", sn: 194112, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.161:
+          peripherals:
+            - { id: f4b8108cf15b, addr: "F4:B8:10:8C:F1:5B", sn: 194115, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: f03cebec73e5, addr: "F0:3C:EB:EC:73:E5", sn: 194110, dfu: { run: no,  new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.165:
+          peripherals:
+            - { id: eb251790082c, addr: "EB:25:17:90:08:2C", sn: 194120, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: c52206a99f36, addr: "C5:22:06:A9:9F:36", sn: 194118, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.169:
+          peripherals:
+            - { id: ff21ac3807d6, addr: "FF:21:AC:38:07:D6", sn: 194121, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: dafa7c7179eb, addr: "DA:FA:7C:71:79:EB", sn: 194122, dfu: { run: no,  new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+        10.8.6.173:
+          peripherals:
+            - { id: e8196a8336b3, addr: "E8:19:6A:83:36:B3", sn: 194124, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }
+            - { id: c6304850d90d, addr: "C6:30:48:50:D9:0D", sn: 194123, dfu: { run: yes, new_hdw: yes }, cfg: { zThreshold: 30, yThreshold: 200, xThreshold: 200, accAcqDivider: 0, measSamples: 32000, checkSamples: 3200, advertInterval: 300 } }

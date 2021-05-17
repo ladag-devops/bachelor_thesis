@@ -1,0 +1,18 @@
+- set_fact:
+    disk_exists: "{{False}}"
+    disk_space: "{{0|int}}"
+    disk_space_text: ""
+
+- name: check sd card
+  shell: "df {{ device }} | tail -n 1 | awk '{ print $4 }'"
+  register: device_status
+
+- set_fact:
+    disk_exists: "{{False if 'No such file' in device_status.stderr else True}}"
+    disk_space: "{{device_status.stdout|default(0, true)}}"
+
+- set_fact: disk_space_text="{{(disk_space|int / 1024) | round(3)}} MB"
+  when: disk_space|int > 1024
+
+- set_fact: disk_space_text="{{(disk_space|int / 1024 / 1024) | round(3)}} GB"
+  when: disk_space|int > 1024*1024

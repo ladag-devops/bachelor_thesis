@@ -1,0 +1,18 @@
+---
+  - name: Reset adapter
+    shell:
+      cmd: /usr/jrd/scripts/retry_reset.sh
+
+  - name: Execute update (new hardware)
+    shell:
+      chdir: /usr/node_modules/nrf5x/examples/
+      cmd: "node dfu-sop.js {{ newhdw_archive }} {{ item.addr }}"
+    with_items: "{{ hostvars[inventory_hostname].peripherals }}"
+    when: item.dfu.run and item.dfu.new_hdw
+
+  - name: Execute update (old hardware)
+    shell:
+      chdir: /usr/node_modules/nrf5x/examples/
+      cmd: "node dfu-sop.js {{ oldhdw_archive }} {{ item.addr }}"
+    with_items: "{{ hostvars[inventory_hostname].peripherals }}"
+    when: item.dfu.run and not item.dfu.new_hdw

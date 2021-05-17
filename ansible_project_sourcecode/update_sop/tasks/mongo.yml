@@ -1,0 +1,14 @@
+---
+- name: Disable all peripherals
+  shell: "mongo remote-transceiver-dev --quiet --eval 'db.sops.updateMany({ enabled: true }, { $set: { enabled: false }})'"
+
+- name: Drop all tasks
+  shell: "mongo remote-transceiver-dev --quiet --eval 'db.tasks.drop()'"
+
+- include_tasks: tasks/mongo_peripheral.yml
+  vars:
+    peripheral: "{{item}}"
+  with_items: "{{ hostvars[inventory_hostname].peripherals }}"
+
+- name: Hide unused peripherals
+  shell: "mongo remote-transceiver-dev --quiet --eval 'db.sops.updateMany({ enabled: false }, { $set: { hidden: true }})'"

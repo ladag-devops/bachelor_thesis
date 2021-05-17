@@ -1,0 +1,9 @@
+[Unit]
+Description=M
+
+[Service]
+Type=simple
+ExecStart=/home/ansible/SOP_updater/run_sop.sh report-mail
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+[Unit]
+Description= Timer for creating SOP report every friday
+
+[Timer]
+OnCalendar=Fri 08:00:00
+Unit=ansible_generate_report.service
+
+[Install]
+WantedBy=multi-user.target

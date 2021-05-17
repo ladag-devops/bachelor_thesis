@@ -1,0 +1,57 @@
+---
+#- hosts: krakow
+
+    - name: Check internet connection
+      shell: 'ping 8.8.8.8'
+      register: inet
+      ignore_errors: yes
+
+    - name: install pip
+      shell: "wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py"
+      when:  inet.rc  == 0
+
+    - name: Install ansible package
+      shell: pip install ansible
+      when:  inet.rc  == 0
+
+    - name: add ansible user
+      user:
+        name: ansible
+        password: $6$Kz8S5jS8Ep0$BlA1iDXXs8Kq8mPYyI52jh1pPXgH5tU55PKLfJnHEFoMK5koSsagvOwzUSDEnyGQ3CIXTlbE2W6CKgb.LG5oC/
+        home: /home/ansible
+        state: present
+
+    - name: copy files
+      copy:
+        src: "{{ item }}"
+        dest: /home/ansible
+        mode: preserve
+      with_items:
+        - ../SOP_updater
+        - ../ansible.cfg
+        - ../ansible-linear.cfg
+        - ../hosts_prod.yaml
+        - ../hosts_test.yaml
+        - ../common
+
+    - name: create_daemons
+      copy:
+        src: /home/ansible/SOP_updater/files/usr/lib/systemd/system/
+        remote_src: yes
+        dest: /usr/lib/systemd/system/
+
+    - name: enable ansible daemons
+      service:
+        name: "{{ item }}"
+        enabled: yes
+      with_items:
+      - 'ansible_generate_report.service'
+      - 'ansible_generate_report.timer'
+
+    - name: start ansible timers
+      service:
+        name: 'ansible_generate_report.timer'
+        state: started
+
+    - name: reload systemd
+      shell: systemctl daemon-reload

@@ -1,0 +1,83 @@
+- name: Get device info
+  local_action: command mysql {{db_conn}} "SELECT idx, id, name FROM devices WHERE vpn_ip='{{inventory_hostname}}';"
+  register: result
+- name: Parse device info result
+  set_fact: dev_info="{{result.stdout_lines[0].split('\t')}}"
+- name: Create device object
+  set_fact:
+    dev:
+      id:         "{{dev_info[0]}}"
+      cr_id:      "{{dev_info[1]}}"
+      name:       "{{dev_info[2]}}"
+      ip_address: "{{inventory_hostname}}"
+
+- name: Set state color
+  set_fact:
+    state_info:
+      name:  "State"
+      value: "{{state}}"
+      color: "{{'green' if state == 'online' else 'red'}}"
+
+- name: Get location age
+  local_action: command mysql {{db_conn}} "SELECT (UNIX_TIMESTAMP(NOW()) - tstamp) FROM logs_locations WHERE device = '{{dev.cr_id}}' ORDER BY id DESC LIMIT 1;"
+  register: result
+- name: Parse location age result
+  set_fact: age_secs="{{result.stdout|int}}"
+- name: Format time difference
+  include_tasks: tasks/time_units.yml
+  vars:
+    t_in_secs: "{{age_secs}}"
+- name: Create location age info
+  set_fact:
+    loc_age_info:
+      name:  "Last location age"
+      value: "{{t_out_str}}"
+      color: "{{'green' if age_secs|int <= 86400 else 'orange' if age_secs|int <= 3*86400 else 'red'}}"
+
+- name: Get file age
+  local_action: command mysql {{db_conn}} "SELECT (UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(created_at)) FROM file WHERE device_id = '{{dev.id}}' ORDER BY id DESC LIMIT 1;"
+  register: result
+- name: Prase file age result
+  set_fact: age_secs="{{result.stdout|int}}"
+- name: Format time difference
+  include_tasks: tasks/time_units.yml
+  vars:
+    t_in_secs: "{{age_secs}}"
+- name: Create file age info
+  set_fact:
+    file_age_info:
+      name:  "Last location age"
+      value: "{{t_out_str}}"
+      color: "{{'green' if age_secs|int <= 86400 else 'orange' if age_secs|int <= 3*86400 else 'red'}}"
+
+- name: Get total files
+  local_action: command mysql {{db_conn}} "SELECT count(*) FROM file WHERE device_id = '{{dev.id}}' AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 day);"
+  register: result
+- name: Parse total files
+  set_fact: total_files="{{result.stdout}}"
+- name: Create total files info
+  set_fact:
+    total_files_info:
+      name:  "Total files (7 days)"
+      value: "{{total_files|default('N/A', true)}}"
+      color: "{{'red' if total_files|int == 0 or total_files|int >= 1500 else 'green'}}"
+
+- name: prepare rsru parameters list
+  set_fact:
+    parameters:
+      - "{{state_info}}"
+      - "{{loc_age_info}}"
+      - "{{file_age_info}}"
+      - "{{total_files_info}}"
+
+- name: prepare rsru parameters
+  set_fact:
+    rsru_elements:
+      id:         "{{dev.id}}"
+      cr_id:      "{{dev.cr_id}}"
+      name:       "{{dev.name}}"
+      ip_address: "{{dev.ip_address}}"
+      parameters: "{{rsru.parameters + parameters}}"
+
+- name: Set basic rsru parameters
+  set_fact: rsru="{{ rsru|combine(rsru_elements) }}"

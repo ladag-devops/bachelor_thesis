@@ -1,0 +1,32 @@
+---
+    - name: Query current configuration
+      shell: "mongo remote-transceiver-dev --quiet --eval 'db.sops.find({ uuid: \"{{peripheral.id}}\" }, { _id: 0, \"config.primary\": 1 })'"
+      register: curr_config
+
+    # Prepare new configuration
+    - set_fact:
+        curr_config: '{{ curr_config.stdout | from_json }}'
+    - set_fact:
+        new_name: { name: "SOP {{peripheral.sn}}" }
+        new_config: "{{ curr_config.config.primary }}"
+    - set_fact:
+        new_config: "{{ new_config | combine(peripheral.cfg, recursive=true) }}"
+    - set_fact:
+        new_config: "{{ new_config | combine(new_name, recursive=true) }}"
+
+    - set_fact:
+        task: {
+          uuid: "{{ peripheral.id }}",
+          command: "upload",
+          mode: "Individual",
+          options: {
+            timestamp: "",
+            primary: "{{ new_config }}"
+          },
+          active: false,
+          tryout: 0,
+          createdOn: "",
+        }
+
+    - name: Insert new configuration upload task
+      shell: "mongo remote-transceiver-dev --quiet --eval 'db.tasks.insert({{ task | to_json }})'"

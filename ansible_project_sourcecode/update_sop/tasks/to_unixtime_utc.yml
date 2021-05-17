@@ -1,0 +1,8 @@
+- set_fact: to_ut_utc_epoch=0
+- name: Datetime to epoch (UTC)
+  set_fact:
+    to_ut_utc_epoch: "{{(
+        (to_ut_utc_dt|to_datetime(to_ut_utc_fmt)) -
+        ('1970 UTC'|to_datetime('%Y %Z'))
+      ).total_seconds()}}"
+  ignore_errors: True

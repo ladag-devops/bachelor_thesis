@@ -1,0 +1,65 @@
+---
+- hosts: sop_prod
+  gather_facts: no
+
+  tasks:
+    - include_vars:
+        dir: vars
+
+    # Concatenate all files and send report
+    - name: Send SOP report mail
+      include_tasks: tasks/report_mail.yml
+      when: mode == "report-mail"
+    - meta: end_play
+      when: mode == "report-mail"
+
+    - name: Create SQL report (offline)
+      include_tasks: ./tasks/report_sql.yml
+      vars:
+        state: "offline"
+      when: mode == "report"
+
+    # Test SQL only - stop processing here
+    # - fail: msg="OK"
+
+    - name: device is available
+      wait_for_connection:
+        connect_timeout: 30
+        timeout: "{{ item.secs }}"
+      when: "item.when"
+      with_items:
+      - { secs: 3600,  when: "{{ mode == 'report' }}" }
+      - { secs: 60,    when: "{{ mode == 'report-mail' }}" }
+      - { secs: 10800, when: "{{ mode != 'report' and mode != 'report-mail' }}" }
+
+    - name: Gathering facts
+      setup:
+
+    - name: Set authorized key for root
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+        
+    - name: Generate report (online)
+      block:
+        - name: Create SQL report (online)
+          include_tasks: ./tasks/report_sql.yml
+          vars:
+            state: "online"
+
+    - name: Create remote device report
+      include_tasks: tasks/sop_report.yml
+      when: mode == "report"
+
+    - name: Perform SOP full update
+      include_tasks: tasks/sop_full_update.yml
+      when: mode == "full-update"
+
+    - name: Perform peripheral config update only
+      include_tasks: tasks/sop_config_only.yml
+      when: mode == "config-only"
+
+    - name: Deploy and configure SOP
+      include_tasks: tasks/sop_deploy.yml
+      when: mode == "deploy"

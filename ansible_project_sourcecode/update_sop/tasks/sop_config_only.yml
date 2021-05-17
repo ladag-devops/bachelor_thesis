@@ -1,0 +1,5 @@
+---
+- include_tasks: mongo_peripheral.yml
+  vars:
+    peripheral: "{{item}}"
+  with_items: "{{ hostvars[inventory_hostname].peripherals }}"
