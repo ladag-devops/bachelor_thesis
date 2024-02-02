@@ -2,7 +2,7 @@
 My thesis for Bachelor's degree obtained in 2020 year: Ansible application in configuration management. <br />In brief, it debates a few popular configuration management tools, selects Ansible as a winning framework and shows a system developed in Ansible which purpose is to support configuration management and generate status reports for sensors distributed in an IoT network.
 
 It is available in two languages:
-- english - **<todo_todo_todo_todo_todo_todo_todo_todo>**
+- english - **TODO**
 - polish - Praca_inzynierska_polski.pdf
 
 
